@@ -19,7 +19,7 @@ interface PlacesService {
     @GET("venues/explore")
     fun getVenueRecommendations(@QueryMap query: Map<String, String>): Call<ResponseWrapper<VenueRecommendationsResponse>>
 
-    companion object  {
+    companion object {
         private val retrofit by lazy {
             Retrofit.Builder()
                 .baseUrl(BuildConfig.FOURSQUARE_BASE_URL)
