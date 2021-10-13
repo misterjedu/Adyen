@@ -14,7 +14,7 @@ class AppExecutors {
         }
     }
 
-    private val networkIO: ScheduledExecutorService = Executors.newScheduledThreadPool(3)
+    private val networkIO: ScheduledExecutorService = Executors.newScheduledThreadPool(1)
 
     fun networkIO(): ScheduledExecutorService {
         return networkIO

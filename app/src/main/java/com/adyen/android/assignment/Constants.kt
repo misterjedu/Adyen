@@ -1,5 +1,5 @@
 package com.adyen.android.assignment
 
 object Constants {
-    const val NETWORK_TIMEOUT: Int = 3000
+    const val NETWORK_TIMEOUT: Int = 6000
 }

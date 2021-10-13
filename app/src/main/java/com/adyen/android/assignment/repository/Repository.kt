@@ -1,6 +1,7 @@
 package com.adyen.android.assignment.repository
 
 import android.util.Log
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.adyen.android.assignment.AppExecutors
 import com.adyen.android.assignment.Constants.NETWORK_TIMEOUT
@@ -15,36 +16,34 @@ import java.util.concurrent.TimeUnit
 
 class Repository(var placesService: PlacesService) : IRepository {
 
-    private var posts: MutableLiveData<ResponseWrapper<VenueRecommendationsResponse>?> =
+    private var venueRecommendation: MutableLiveData<ResponseWrapper<VenueRecommendationsResponse>?> =
         MutableLiveData()
 
-    private var retrievePostRunnable: RetrievePostRunnable? = null
+    private var retrievePostRunnable: RetrieveRecommendationRunnable? = null
 
     override fun getVenueRecommendation(
         latitude: Double,
         longitude: Double
-    ): MutableLiveData<ResponseWrapper<VenueRecommendationsResponse>?> {
-
+    ) {
         if (retrievePostRunnable != null) {
             retrievePostRunnable = null
         }
 
-        retrievePostRunnable = RetrievePostRunnable(latitude, longitude)
+        retrievePostRunnable = RetrieveRecommendationRunnable(latitude, longitude)
 
-        val handler: Future<*> = AppExecutors.getInstance().networkIO().submit(retrievePostRunnable)
+        val handler = AppExecutors.getInstance().networkIO().submit(retrievePostRunnable)
 
-        AppExecutors.getInstance().networkIO().schedule(object : Runnable {
-            override fun run() {
-                //Let user know it's timed out.
-                handler.cancel(true)
-            }
-
+        AppExecutors.getInstance().networkIO().schedule({
+            handler.cancel(true)
         }, NETWORK_TIMEOUT.toLong(), TimeUnit.MILLISECONDS)
-        return posts
+    }
+
+    override fun getVenueRecommendationList(): LiveData<ResponseWrapper<VenueRecommendationsResponse>?> {
+        return venueRecommendation
     }
 
 
-    inner class RetrievePostRunnable(
+    inner class RetrieveRecommendationRunnable(
         var latitude: Double,
         var longitude: Double
     ) : Runnable {
@@ -58,16 +57,10 @@ class Repository(var placesService: PlacesService) : IRepository {
                 if (cancelRequest) {
                     return
                 }
-                if (response.isSuccessful) {
-                    posts.postValue(response.body())
-                } else {
-                    val error: String = response.errorBody().toString()
-                    Log.e("Post Retrieve Error", error)
-                    posts.postValue(null)
-                }
+                venueRecommendation.postValue(response.body())
             } catch (e: IOException) {
                 e.printStackTrace()
-                posts.postValue(null)
+                venueRecommendation.postValue(null)
             }
         }
 
@@ -81,6 +74,8 @@ class Repository(var placesService: PlacesService) : IRepository {
         latitude: Double,
         longitude: Double
     ): Call<ResponseWrapper<VenueRecommendationsResponse>> {
+
+        println("Get Recommend Values called")
 
         val query = VenueRecommendationsQueryBuilder()
             .setLatitudeLongitude(latitude, longitude)

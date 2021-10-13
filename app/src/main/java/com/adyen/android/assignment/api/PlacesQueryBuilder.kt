@@ -6,6 +6,7 @@ import java.util.Date
 import java.util.Locale
 
 abstract class PlacesQueryBuilder {
+
     private val baseQueryParams by lazy {
         mapOf(
             "client_id" to BuildConfig.CLIENT_ID,

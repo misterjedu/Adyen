@@ -1,6 +1,113 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="wrap_content"
+    android:layout_margin="5dp"
+    android:background="@drawable/curved_background"
+    android:elevation="2dp">
 
-</LinearLayout>
+    <TextView
+        android:id="@+id/item_place_venue_place"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="15dp"
+        android:layout_weight="1"
+        android:textAlignment="center"
+        android:textColor="@color/colorPrimary"
+        android:textSize="16sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <View
+        android:id="@+id/view"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:layout_marginTop="8dp"
+        android:background="@color/colorPrimary"
+        app:layout_constraintEnd_toEndOf="@+id/item_place_venue_place"
+        app:layout_constraintStart_toStartOf="@+id/item_place_venue_place"
+        app:layout_constraintTop_toBottomOf="@+id/item_place_venue_place" />
+
+    <TextView
+        android:id="@+id/item_place_city_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="City : "
+        app:layout_constraintStart_toStartOf="@+id/view"
+        app:layout_constraintTop_toBottomOf="@+id/view" />
+
+    <TextView
+        android:id="@+id/item_place_city"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        app:layout_constraintBottom_toBottomOf="@+id/item_place_city_view"
+        app:layout_constraintStart_toEndOf="@+id/item_place_city_view"
+        app:layout_constraintTop_toTopOf="@+id/item_place_city_view"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <TextView
+        android:id="@+id/item_place_postal_code"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="2dp"
+        app:layout_constraintBottom_toBottomOf="@+id/item_place_postal_code_view"
+        app:layout_constraintStart_toEndOf="@+id/item_place_postal_code_view"
+        app:layout_constraintTop_toTopOf="@+id/item_place_postal_code_view" />
+
+    <TextView
+        android:id="@+id/item_place_postal_code_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Postal Code : "
+        app:layout_constraintStart_toStartOf="@+id/item_place_city_view"
+        app:layout_constraintTop_toBottomOf="@+id/item_place_city_view" />
+
+    <TextView
+        android:id="@+id/item_place_address_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Address : "
+        app:layout_constraintStart_toStartOf="@+id/item_place_postal_code_view"
+        app:layout_constraintTop_toBottomOf="@+id/item_place_postal_code_view" />
+
+    <TextView
+        android:id="@+id/item_place_address"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        app:layout_constraintBottom_toBottomOf="@+id/item_place_address_view"
+        app:layout_constraintStart_toEndOf="@+id/item_place_address_view"
+        app:layout_constraintTop_toTopOf="@+id/item_place_address_view"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <TextView
+        android:id="@+id/item_place_distance"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        app:layout_constraintBottom_toBottomOf="@+id/item_place_distance_view"
+        app:layout_constraintStart_toEndOf="@+id/item_place_distance_view"
+        app:layout_constraintTop_toTopOf="@+id/item_place_distance_view"
+        app:layout_constraintVertical_bias="1.0" />
+
+    <TextView
+        android:id="@+id/item_place_distance_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="10dp"
+        android:text="Distance (m) : "
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/item_place_address_view"
+        app:layout_constraintTop_toBottomOf="@+id/item_place_address_view" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
