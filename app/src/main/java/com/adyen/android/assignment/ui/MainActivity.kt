@@ -2,6 +2,7 @@ package com.adyen.android.assignment.ui
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Bundle
 import android.os.Looper
 import android.view.View
@@ -11,22 +12,18 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
+import com.adyen.android.assignment.*
+import com.adyen.android.assignment.R
 import com.adyen.android.assignment.api.PlacesService
 import com.adyen.android.assignment.api.model.RecommendedItem
 import com.adyen.android.assignment.modelFactory.ViewModelFactory
 import com.adyen.android.assignment.repository.Repository
 import com.adyen.android.assignment.ui.venue_recycler_adapter.RecommendedItemListAdapter
 import com.adyen.android.assignment.viewmodel.VenueViewModel
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.*
 import com.vmadalin.easypermissions.EasyPermissions
 import com.vmadalin.easypermissions.dialogs.SettingsDialog
-import com.google.android.gms.location.LocationResult
-import com.google.android.gms.location.LocationCallback
-import com.google.android.gms.location.LocationRequest
 import kotlinx.android.synthetic.main.activity_main.*
-import android.content.Intent
-import com.adyen.android.assignment.*
 
 
 class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
@@ -41,6 +38,7 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
     }
 
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
+    private lateinit var locationCallback: LocationCallback
     private var recommendedItemRecyclerAdapter = RecommendedItemListAdapter()
     private lateinit var searchView: SearchView
     private lateinit var venueRecycler: RecyclerView
@@ -49,7 +47,6 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        activity_main_root.hideView()
 
         searchView = activity_main_search_view
         venueRecycler = activity_main_venue_recycler
@@ -77,7 +74,6 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
 
     private fun callObserveVenueRecommendation(latitude: Double, longitude: Double) {
 
-        activity_main_root.showView()
         switchVisibilityOn(activity_main_loading_layout)
 
         viewModel.getVenueRecommendation(latitude, longitude)
@@ -89,7 +85,7 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
                 toast("Cannot connect internet")
             } else {
 
-                // Check if response code is successfull, usually between 200 and 300 status code
+                // Check if response code is successful, usually between 200 and 300 status code
                 if (response.meta.code in 200..300) {
                     switchVisibilityOn(activity_main_venue_recycler)
                     for (groups in response.response.groups) {
@@ -97,7 +93,6 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
                             recommendedItems.add(item)
                         }
                     }
-
                 }
             }
 
@@ -130,6 +125,8 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
             "Permission Granted!",
             Toast.LENGTH_SHORT
         ).show()
+
+        getLocation()
     }
 
 
@@ -178,7 +175,6 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
         super.onActivityResult(requestCode, resultCode, data)
         when (requestCode) {
             PERMISSIONS_REQUEST_ENABLE_GPS -> {
-                activity_main_root.showView()
                 getLocation()
             }
         }
@@ -187,24 +183,35 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
     @SuppressLint("MissingPermission")
     fun getLocation() {
         if (hasLocationPermission()) {
+            toast("Getting location...")
             val locationRequest = LocationRequest.create()
-            val mLocationCallback: LocationCallback = object : LocationCallback() {
+            locationCallback = object : LocationCallback() {
                 override fun onLocationResult(locationResult: LocationResult) {
 
+                    toast("Location received...")
                     longitude = locationResult.lastLocation.longitude
                     latitude = locationResult.lastLocation.latitude
 
+                    toast("${latitude} ${longitude}")
                     callObserveVenueRecommendation(latitude, longitude)
+
                 }
             }
-            LocationServices.getFusedLocationProviderClient(this)
+            fusedLocationProviderClient
                 .requestLocationUpdates(
                     locationRequest,
-                    mLocationCallback,
+                    locationCallback,
                     Looper.getMainLooper()
                 )
         } else {
             requestLocationPermission()
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        if (::fusedLocationProviderClient.isInitialized && ::locationCallback.isInitialized) {
+            fusedLocationProviderClient.removeLocationUpdates(locationCallback)
         }
     }
 }

@@ -1,7 +1,6 @@
 package com.adyen.android.assignment.viewmodel
 
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.adyen.android.assignment.api.model.ResponseWrapper
 import com.adyen.android.assignment.api.model.VenueRecommendationsResponse

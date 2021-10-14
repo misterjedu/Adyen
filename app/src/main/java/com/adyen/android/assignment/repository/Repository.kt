@@ -1,6 +1,5 @@
 package com.adyen.android.assignment.repository
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.adyen.android.assignment.AppExecutors
@@ -11,7 +10,6 @@ import com.adyen.android.assignment.api.model.ResponseWrapper
 import com.adyen.android.assignment.api.model.VenueRecommendationsResponse
 import retrofit2.Call
 import java.io.IOException
-import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
 
 class Repository(var placesService: PlacesService) : IRepository {
@@ -74,8 +72,6 @@ class Repository(var placesService: PlacesService) : IRepository {
         latitude: Double,
         longitude: Double
     ): Call<ResponseWrapper<VenueRecommendationsResponse>> {
-
-        println("Get Recommend Values called")
 
         val query = VenueRecommendationsQueryBuilder()
             .setLatitudeLongitude(latitude, longitude)
