@@ -61,11 +61,13 @@
             android:visibility="gone">
 
             <ImageView
+                android:id="@+id/activity_main_offline_image"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:src="@drawable/offlinee" />
 
             <TextView
+                android:id="@+id/activity_main_offline_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginVertical="30dp"

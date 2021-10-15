@@ -25,7 +25,6 @@ import com.vmadalin.easypermissions.EasyPermissions
 import com.vmadalin.easypermissions.dialogs.SettingsDialog
 import kotlinx.android.synthetic.main.activity_main.*
 
-
 class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
     private lateinit var viewModel: VenueViewModel
 
@@ -46,7 +45,6 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
 
         searchView = activity_main_search_view
         venueRecycler = activity_main_venue_recycler
@@ -72,6 +70,9 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
         searchVenues()
     }
 
+    /**
+     * Observe venue recommendations from the view model response live data
+     */
     private fun callObserveVenueRecommendation(latitude: Double, longitude: Double) {
 
         switchVisibilityOn(activity_main_loading_layout)
@@ -79,7 +80,9 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
         viewModel.getVenueRecommendation(latitude, longitude)
 
         viewModel.venueRecommendations.observe(this, Observer { response ->
+
             val recommendedItems: MutableList<RecommendedItem> = mutableListOf()
+
             if (response == null) {
                 switchVisibilityOn(activity_main_offline_layout)
                 toast("Cannot connect internet")
@@ -93,10 +96,23 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
                             recommendedItems.add(item)
                         }
                     }
+                } else {
+                    switchVisibilityOn(activity_main_offline_layout)
+                    when (response.meta.code) {
+                        in 300..400 -> {
+                            activity_main_offline_text.text = "Redirection error"
+                        }
+                        in 400..500 -> {
+                            activity_main_offline_text.text = "Bad request"
+                        }
+                        in 500..600 -> {
+                            activity_main_offline_text.text = "Server error"
+                        }
+                    }
                 }
             }
 
-            //Pass recommeded items into recycler view items
+            //Pass recommended items into recycler view items
             recommendedItemRecyclerAdapter.setRecommendedItems(recommendedItems)
         })
     }
@@ -156,6 +172,11 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
         })
     }
 
+    /**
+     * Switch  to loading, error ir success screen depending on the state of the
+     * network response
+     */
+
     private fun switchVisibilityOn(view: View) {
         activity_main_loading_layout.hideView()
         activity_main_venue_recycler.hideView()
@@ -171,6 +192,7 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
         }
     }
 
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         when (requestCode) {
@@ -180,11 +202,17 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
         }
     }
 
+
+    /**
+     * The co-ordinates of the user is gotten using the fused location client provider
+     * To prevent getting a null location, the requestLocationUpdate update is used.
+     */
     @SuppressLint("MissingPermission")
     fun getLocation() {
         if (hasLocationPermission()) {
             toast("Getting location...")
             val locationRequest = LocationRequest.create()
+
             locationCallback = object : LocationCallback() {
                 override fun onLocationResult(locationResult: LocationResult) {
 
@@ -197,17 +225,23 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
 
                 }
             }
+
             fusedLocationProviderClient
                 .requestLocationUpdates(
                     locationRequest,
                     locationCallback,
                     Looper.getMainLooper()
                 )
+
         } else {
             requestLocationPermission()
         }
     }
 
+    /**
+     *The location update listener is removed on pause of the activity to prevent constant listening
+     * when the activity is no longer in use.
+     */
     override fun onPause() {
         super.onPause()
         if (::fusedLocationProviderClient.isInitialized && ::locationCallback.isInitialized) {
