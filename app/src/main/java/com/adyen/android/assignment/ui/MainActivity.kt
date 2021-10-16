@@ -49,7 +49,7 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
         searchView = activity_main_search_view
         venueRecycler = activity_main_venue_recycler
 
-        val repository = Repository(PlacesService.instance)
+        val repository = Repository(PlacesService.getApiService((application as AdyenApp)))
         val viewModelFactory = ViewModelFactory(repository)
 
         viewModel = ViewModelProvider(this, viewModelFactory).get(VenueViewModel::class.java)
@@ -85,11 +85,9 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
 
             if (response == null) {
                 switchVisibilityOn(activity_main_offline_layout)
-                toast("Cannot connect internet")
             } else {
-
                 // Check if response code is successful, usually between 200 and 300 status code
-                if (response.meta.code in 200..300) {
+                if (response.meta.code in 200..299) {
                     switchVisibilityOn(activity_main_venue_recycler)
                     for (groups in response.response.groups) {
                         for (item in groups.items) {
@@ -99,14 +97,18 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
                 } else {
                     switchVisibilityOn(activity_main_offline_layout)
                     when (response.meta.code) {
-                        in 300..400 -> {
-                            activity_main_offline_text.text = "Redirection error"
+                        in 300..399 -> {
+                            activity_main_offline_text.text =
+                                resources.getString(R.string.redirection_error)
                         }
-                        in 400..500 -> {
-                            activity_main_offline_text.text = "Bad request"
+                        in 400..499 -> {
+                            activity_main_offline_text.text =
+                                resources.getString(R.string.bad_request)
                         }
                         in 500..600 -> {
-                            activity_main_offline_text.text = "Server error"
+                            activity_main_offline_text.text =
+                                resources.getString(R.string.server_error)
+
                         }
                     }
                 }

@@ -1,4 +1,4 @@
-package com.adyen.android.assignment
+package com.adyen.android.assignment.util
 
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService

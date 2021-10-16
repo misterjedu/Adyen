@@ -2,4 +2,7 @@
     <string name="app_name">Android Assignment</string>
     <string name="seems_you_are_offline">Seems you are offline</string>
     <string name="reload">Reload</string>
+    <string name="bad_request">Bad Request</string>
+    <string name="server_error">Server error</string>
+    <string name="redirection_error">Redirection error</string>
 </resources>

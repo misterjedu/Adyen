@@ -1,4 +1,4 @@
-package com.adyen.android.assignment
+package com.adyen.android.assignment.util
 
 import okhttp3.OkHttpClient
 import java.util.concurrent.TimeUnit
@@ -16,7 +16,7 @@ object OkHttpProvider {
                 .readTimeout(REQUEST_TIMEOUT, TimeUnit.SECONDS)
                 .connectTimeout(REQUEST_TIMEOUT, TimeUnit.SECONDS)
                 .build()
-            this.okHttpClient = okHttpClient
+            OkHttpProvider.okHttpClient = okHttpClient
             okHttpClient
         } else {
             okHttpClient!!

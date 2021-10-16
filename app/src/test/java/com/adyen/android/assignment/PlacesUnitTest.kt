@@ -4,7 +4,6 @@ import com.adyen.android.assignment.api.PlacesService
 import com.adyen.android.assignment.api.VenueRecommendationsQueryBuilder
 import com.adyen.android.assignment.api.model.ResponseWrapper
 import com.adyen.android.assignment.api.model.VenueRecommendationsResponse
-import okhttp3.ResponseBody
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
@@ -20,10 +19,10 @@ class PlacesUnitTest {
             .getVenueRecommendations(query)
             .execute()
 
-        val errorBody  = response.errorBody()
+        val errorBody = response.errorBody()
         assertNull("Received an error: ${errorBody?.string()}", errorBody)
 
-        val responseWrapper : ResponseWrapper<VenueRecommendationsResponse>? = response.body()
+        val responseWrapper: ResponseWrapper<VenueRecommendationsResponse>? = response.body()
         assertNotNull("Response is null.", responseWrapper)
         assertEquals("Response code", 200, responseWrapper!!.meta.code)
     }

@@ -2,15 +2,18 @@ package com.adyen.android.assignment.repository
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import com.adyen.android.assignment.AppExecutors
-import com.adyen.android.assignment.Constants.NETWORK_TIMEOUT
+import com.adyen.android.assignment.util.AppExecutors
+import com.adyen.android.assignment.util.Constants.NETWORK_TIMEOUT
 import com.adyen.android.assignment.api.PlacesService
 import com.adyen.android.assignment.api.VenueRecommendationsQueryBuilder
 import com.adyen.android.assignment.api.model.ResponseWrapper
 import com.adyen.android.assignment.api.model.VenueRecommendationsResponse
+import com.google.gson.Gson
 import retrofit2.Call
 import java.io.IOException
 import java.util.concurrent.TimeUnit
+import com.squareup.moshi.Moshi
+
 
 class Repository(var placesService: PlacesService) : IRepository {
 
@@ -20,8 +23,7 @@ class Repository(var placesService: PlacesService) : IRepository {
     private var retrievePostRunnable: RetrieveRecommendationRunnable? = null
 
     override fun getVenueRecommendation(
-        latitude: Double,
-        longitude: Double
+        latitude: Double, longitude: Double
     ) {
         if (retrievePostRunnable != null) {
             retrievePostRunnable = null
@@ -55,7 +57,18 @@ class Repository(var placesService: PlacesService) : IRepository {
                 if (cancelRequest) {
                     return
                 }
-                venueRecommendation.postValue(response.body())
+                if (response.isSuccessful) {
+                    venueRecommendation.postValue(response.body())
+                } else {
+
+                    val error: ResponseWrapper<*>? = Gson().fromJson(
+                        response.errorBody()!!.charStream(),
+                        ResponseWrapper::class.java
+                    )
+
+                    venueRecommendation.postValue(error as ResponseWrapper<VenueRecommendationsResponse>?)
+
+                }
             } catch (e: IOException) {
                 e.printStackTrace()
                 venueRecommendation.postValue(null)
@@ -78,6 +91,7 @@ class Repository(var placesService: PlacesService) : IRepository {
             .build()
 
         return placesService.getVenueRecommendations(query)
+
     }
 
 }
