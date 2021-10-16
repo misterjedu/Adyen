@@ -10,6 +10,7 @@ import org.junit.Assert.assertNull
 import org.junit.Test
 
 class PlacesUnitTest {
+
     @Test
     fun testResponseCode() {
         val query = VenueRecommendationsQueryBuilder()

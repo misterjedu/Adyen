@@ -1,6 +1,5 @@
 package com.adyen.android.assignment.api
 
-import android.app.Application
 import com.adyen.android.assignment.AdyenApp
 import com.adyen.android.assignment.BuildConfig
 import com.adyen.android.assignment.api.model.ResponseWrapper
@@ -25,6 +24,22 @@ interface PlacesService {
 
     companion object {
 
+        //Retrofit instance for Unit Test only
+        private val retrofit: Retrofit by lazy {
+            Retrofit.Builder()
+                .baseUrl(BuildConfig.FOURSQUARE_BASE_URL)
+                .addConverterFactory(MoshiConverterFactory.create())
+                .build()
+        }
+        val instance: PlacesService by lazy { retrofit.create(PlacesService::class.java) }
+
+
+        /**
+         * For the main app and Instrumented testing, the application
+         * context is needed to switch from the main url to the local host
+         * for while testing. The logger is also enabled for debugging the api response in
+         * debug mode
+         */
         private var logger =
             if (BuildConfig.DEBUG) HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY) else HttpLoggingInterceptor().setLevel(
                 HttpLoggingInterceptor.Level.NONE
@@ -38,9 +53,7 @@ interface PlacesService {
             .addInterceptor(logger)
             .build()
 
-
-        fun getApiService(application: AdyenApp = AdyenApp()): PlacesService {
-
+        fun getApiService(application: AdyenApp): PlacesService {
             val retrofit by lazy {
                 Retrofit.Builder()
                     .baseUrl((application.getBaseUrl()))
@@ -49,22 +62,9 @@ interface PlacesService {
                     .build()
 
             }
-
             val instance: PlacesService by lazy { retrofit.create(PlacesService::class.java) }
-
             return instance
         }
-
-        val retrofit by lazy {
-            Retrofit.Builder()
-                .baseUrl(BuildConfig.FOURSQUARE_BASE_URL)
-                .addConverterFactory(MoshiConverterFactory.create())
-                .client(client)
-                .build()
-
-        }
-
-        val instance: PlacesService by lazy { retrofit.create(PlacesService::class.java) }
 
     }
 }

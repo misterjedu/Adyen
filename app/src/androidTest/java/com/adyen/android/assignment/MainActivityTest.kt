@@ -8,8 +8,10 @@ import androidx.test.espresso.matcher.ViewMatchers.withId
 import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.rule.ActivityTestRule
+import androidx.test.rule.GrantPermissionRule
 import com.adyen.android.assignment.ui.MainActivity
 import com.adyen.android.assignment.util.OkHttpProvider
+import com.adyen.android.assignment.utils.grantPermission
 import com.jakewharton.espresso.OkHttp3IdlingResource
 import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
@@ -24,21 +26,6 @@ import java.util.concurrent.TimeUnit
 
 @RunWith(AndroidJUnit4::class)
 class MainActivityTest {
-
-//    @get:Rule
-//    val permissionRule: GrantPermissionRule = GrantPermissionRule.grant(
-//        android.Manifest.permission.ACCESS_FINE_LOCATION,
-//        android.Manifest.permission.ACCESS_NETWORK_STATE
-//    )
-//
-//    @Test
-//    fun should_displayMap_when_permissionsAreGranted() {
-//        ActivityScenario.launch(MainActivity::class.java)
-//
-//        onView(withId(R.id.map))
-//            .check(matches(isDisplayed()))
-//    }
-
 
     @get:Rule
     val activityRule = ActivityTestRule(MainActivity::class.java, true, false)

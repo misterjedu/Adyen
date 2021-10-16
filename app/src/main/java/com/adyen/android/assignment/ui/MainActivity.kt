@@ -3,6 +3,7 @@ package com.adyen.android.assignment.ui
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.location.Location
 import android.os.Bundle
 import android.os.Looper
 import android.view.View
@@ -108,7 +109,6 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
                         in 500..600 -> {
                             activity_main_offline_text.text =
                                 resources.getString(R.string.server_error)
-
                         }
                     }
                 }
@@ -186,9 +186,8 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
         view.showView()
     }
 
-    override fun onStart() {
-        super.onStart()
-        //Check if GPS is enabled and request for location
+    override fun onResume() {
+        super.onResume()
         if (isMapsEnabled()) {
             getLocation()
         }
@@ -207,37 +206,54 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
 
     /**
      * The co-ordinates of the user is gotten using the fused location client provider
-     * To prevent getting a null location, the requestLocationUpdate update is used.
+     * The last location is requested first, and if null, the requestLocationUpdate
+     *  is used.
      */
     @SuppressLint("MissingPermission")
+
     fun getLocation() {
         if (hasLocationPermission()) {
             toast("Getting location...")
-            val locationRequest = LocationRequest.create()
 
-            locationCallback = object : LocationCallback() {
-                override fun onLocationResult(locationResult: LocationResult) {
-
-                    toast("Location received...")
-                    longitude = locationResult.lastLocation.longitude
-                    latitude = locationResult.lastLocation.latitude
-
-                    toast("${latitude} ${longitude}")
-                    callObserveVenueRecommendation(latitude, longitude)
-
+            fusedLocationProviderClient.lastLocation.addOnSuccessListener { location: Location? ->
+                if (location == null) {
+                    getLocationUpdate()
+                } else {
+                    location?.let {
+                        longitude = it.longitude
+                        latitude = it.latitude
+                        callObserveVenueRecommendation(it.latitude, it.longitude)
+                    }
                 }
             }
-
-            fusedLocationProviderClient
-                .requestLocationUpdates(
-                    locationRequest,
-                    locationCallback,
-                    Looper.getMainLooper()
-                )
-
         } else {
             requestLocationPermission()
         }
+    }
+
+    @SuppressLint("MissingPermission")
+    fun getLocationUpdate() {
+        val locationRequest = LocationRequest.create()
+
+        locationCallback = object : LocationCallback() {
+            override fun onLocationResult(locationResult: LocationResult) {
+
+                toast("Location received...")
+                longitude = locationResult.lastLocation.longitude
+                latitude = locationResult.lastLocation.latitude
+
+                toast("${latitude} ${longitude}")
+                callObserveVenueRecommendation(latitude, longitude)
+            }
+        }
+
+        fusedLocationProviderClient
+            .requestLocationUpdates(
+                locationRequest,
+                locationCallback,
+                Looper.getMainLooper()
+            )
+
     }
 
     /**

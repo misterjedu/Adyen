@@ -8,7 +8,5 @@ open class AdyenApp : Application() {
 
     open fun getBaseUrl(): String {
         return url
-        println("For the culture")
-
     }
 }

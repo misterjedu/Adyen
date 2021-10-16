@@ -80,5 +80,6 @@ dependencies {
 
     androidTestImplementation 'com.jakewharton.espresso:okhttp3-idling-resource:1.0.0'
 
+    implementation 'androidx.test.uiautomator:uiautomator:2.2.0'
 
 }

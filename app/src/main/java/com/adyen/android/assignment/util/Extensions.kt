@@ -26,7 +26,7 @@ fun Activity.buildAlertMessageNoGps() {
     val builder: AlertDialog.Builder = AlertDialog.Builder(this)
     builder.setMessage("This application requires GPS to work properly, do you want to enable it?")
         .setCancelable(false)
-        .setPositiveButton("Yes") { _, _ ->
+        .setPositiveButton("Allow") { _, _ ->
             val enableGpsIntent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
             startActivityForResult(enableGpsIntent, MainActivity.PERMISSIONS_REQUEST_ENABLE_GPS)
         }
