@@ -1,13 +1,33 @@
 package com.adyen.android.assignment
 
+import com.adyen.android.assignment.money.Bill
 import com.adyen.android.assignment.money.Change
+import com.adyen.android.assignment.money.Coin
 import com.adyen.android.assignment.money.MonetaryElement
+import java.util.*
+import kotlin.collections.ArrayList
 
 /**
  * The CashRegister class holds the logic for performing transactions.
  *
  * @param change The change that the CashRegister is holding.
  */
+
+fun main() {
+
+
+    val change = Change()
+        .add(Bill.FIVE_EURO, 3)
+
+    val register = CashRegister(change)
+
+    val amountPaid = Change()
+        .add(Bill.FIVE_EURO, 7)
+        .add(Coin.TWENTY_CENT, 2)
+
+    register.performTransaction(35_40, amountPaid)
+
+}
 
 class CashRegister(private val change: Change) {
     /**
@@ -21,104 +41,103 @@ class CashRegister(private val change: Change) {
      * @throws TransactionException If the transaction cannot be performed.
      */
 
-    private var monetaryElements = change.getElements().toList().asReversed();
-    var monetaryElementsCount = change.getElements().size
+    var elementsToReturn: ArrayList<MonetaryElement> = ArrayList()
 
     fun performTransaction(price: Long, amountPaid: Change): Change {
 
-        val totalAmountPaid = amountPaid.total
-        val balance = totalAmountPaid - price
+        var totalAmountPaid = amountPaid.total
 
-        if (balance == 0L) {
-            return Change.none();
-        }
-        if (balance < 0 || balance > change.total)
-            throw TransactionException("Insufficient amount!")
+        var amountToReturnToCustomer = totalAmountPaid - price
 
-        var remainingTotal: Long = balance
+        println("Amunt to return $amountToReturnToCustomer")
+        println("Amunt paid $totalAmountPaid")
+
+        val allChangeLeft: MutableList<MonetaryElement> = mutableListOf()
+
+        /**
+         * Once a user has paid, the monies paid can be used as change too
+         * Therefore, it's added to the list of potential change element to be returned
+         */
+
+        allChangeLeft.addAll(getAllElementsInChange(change))
+        allChangeLeft.addAll(getAllElementsInChange(amountPaid))
+        allChangeLeft.reverse()
 
 
-        val moniesToRemove: MutableList<Long> = arrayListOf()
-        repeat(monetaryElementsCount) { num -> moniesToRemove.add(num, 0) }
 
-        var biggestMoneyElementIndex = -1
-        var counter = 0
-
-
-        while (counter < monetaryElementsCount) {
-
-            val monetaryElements = change.getElements().toList().reversed()
-            val currentMonetaryElement = monetaryElements[counter]
-
-            if (biggestMoneyElementIndex == counter) {
-
-                var quantityOfMonetaryElement = moniesToRemove[counter]
-                if (quantityOfMonetaryElement == 0L) {
-                    biggestMoneyElementIndex = -1
-                } else {
-                    quantityOfMonetaryElement -= 1
-                    remainingTotal += currentMonetaryElement.minorValue * 1
-                }
-
-                moniesToRemove[counter] = quantityOfMonetaryElement
-
-            } else {
-
-                var amountOfMonetaryElement = remainingTotal.div(currentMonetaryElement.minorValue)
-                if (amountOfMonetaryElement > change.getCount(currentMonetaryElement)) {
-                    amountOfMonetaryElement = 0
-                }
-                if (amountOfMonetaryElement > 0) {
-                    if (biggestMoneyElementIndex == -1) {
-                        biggestMoneyElementIndex = counter
-                    }
-                    remainingTotal =
-                        remainingTotal.minus(currentMonetaryElement.minorValue * amountOfMonetaryElement)
-                }
-                moniesToRemove[counter] = amountOfMonetaryElement
-
-            }
-
-            if (counter == monetaryElements.size - 1) {
-                if (remainingTotal != 0L && biggestMoneyElementIndex != -1 && biggestMoneyElementIndex != counter) {
-                    counter = biggestMoneyElementIndex - 1
-                }
-            }
-
-            counter += 1
-
+        if (price > totalAmountPaid) {
+            throw TransactionException("Not enough change to purchase item")
+        } else {
+            sum_up_recursive(allChangeLeft, amountToReturnToCustomer, ArrayList())
         }
 
-        if (moniesToRemove.sum() == 0L) {
-            throw TransactionException("Insufficient bills in register!")
+        val changeToReturn = Change()
+        for (item in elementsToReturn) {
+            changeToReturn.add(item, 1)
         }
-        removeQuantities(moniesToRemove)
 
-        return createChange(monetaryElements, moniesToRemove)
+        if (amountToReturnToCustomer != 0L && changeToReturn.total == 0L) {
+            throw TransactionException("Change required not available")
+        }
+
+        return changeToReturn
     }
 
-    private fun removeQuantities(quantities: List<Long>) {
-        if (quantities.size != monetaryElements.size) {
-            throw TransactionException("Invalid set of quantities to remove.")
+
+    private fun sum_up_recursive(
+        elements: List<MonetaryElement>,
+        target: Long,
+        partial: ArrayList<MonetaryElement>
+    ) {
+
+        var sum = 0L
+
+        for (monetaryElement in partial) {
+            sum += monetaryElement.minorValue
         }
-        for ((index, value) in quantities.withIndex()) {
-            val monetaryElement: MonetaryElement = monetaryElements.elementAt(index)
-            if (change.getCount(monetaryElement) < value) {
-                throw TransactionException("Not enough \$${monetaryElement.minorValue} bills to remove")
+
+        if (sum == target) {
+
+            if (elementsToReturn.isEmpty()) {
+                elementsToReturn = partial
+            } else if (partial.size < elementsToReturn.size) {
+                elementsToReturn = partial
             }
-            change.remove(monetaryElement, value.toInt())
+
+        }
+
+        if (sum >= target) return
+
+        for (i in elements.indices) {
+            val remaining = mutableListOf<MonetaryElement>()
+
+            val n = elements[i]
+
+            for (j in i + 1 until elements.size) {
+                remaining.add(elements[j])
+            }
+
+            val partial_rec = ArrayList(partial)
+
+            partial_rec.add(n)
+
+            sum_up_recursive(remaining, target, partial_rec)
         }
     }
 
-    private fun createChange(
-        monetaryElements: List<MonetaryElement>,
-        moniesToRemove: MutableList<Long>
-    ): Change {
-        val change = Change()
-        for (i in monetaryElements.indices) {
-            change.add(monetaryElements[i], moniesToRemove[i].toInt())
+
+    /**
+     * Return all the monetary elements in a change.
+     */
+    private fun getAllElementsInChange(change: Change): MutableList<MonetaryElement> {
+        val allElements: MutableList<MonetaryElement> = mutableListOf()
+
+        for (element in change.getElements()) {
+            for (item in 0 until change.getCount(element)) {
+                allElements.add(element)
+            }
         }
-        return change
+        return allElements
     }
 
     class TransactionException(message: String, cause: Throwable? = null) :

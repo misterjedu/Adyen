@@ -8,6 +8,7 @@ import org.junit.Assert.assertNotEquals
 import org.junit.Test
 
 class ChangeTest {
+
     @Test
     fun testEquals() {
         val expected = Change()
@@ -50,4 +51,5 @@ class ChangeTest {
             .add(Bill.ONE_HUNDRED_EURO, 1)
         assertNotEquals(expected, actual)
     }
+
 }
