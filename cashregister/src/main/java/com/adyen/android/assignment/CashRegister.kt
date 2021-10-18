@@ -12,23 +12,6 @@ import kotlin.collections.ArrayList
  *
  * @param change The change that the CashRegister is holding.
  */
-
-fun main() {
-
-
-    val change = Change()
-        .add(Bill.FIVE_EURO, 3)
-
-    val register = CashRegister(change)
-
-    val amountPaid = Change()
-        .add(Bill.FIVE_EURO, 7)
-        .add(Coin.TWENTY_CENT, 2)
-
-    register.performTransaction(35_40, amountPaid)
-
-}
-
 class CashRegister(private val change: Change) {
     /**
      * Performs a transaction for a product/products with a certain price and a given amount.
@@ -48,9 +31,6 @@ class CashRegister(private val change: Change) {
         var totalAmountPaid = amountPaid.total
 
         var amountToReturnToCustomer = totalAmountPaid - price
-
-        println("Amunt to return $amountToReturnToCustomer")
-        println("Amunt paid $totalAmountPaid")
 
         val allChangeLeft: MutableList<MonetaryElement> = mutableListOf()
 

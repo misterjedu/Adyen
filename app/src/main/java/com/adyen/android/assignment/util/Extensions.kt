@@ -1,4 +1,4 @@
-package com.adyen.android.assignment
+package com.adyen.android.assignment.util
 
 import android.app.Activity
 import android.app.AlertDialog
@@ -8,7 +8,7 @@ import android.location.LocationManager
 import android.provider.Settings
 import android.view.View
 import android.widget.Toast
-import com.adyen.android.assignment.ui.MainActivity
+import com.adyen.android.assignment.ui.BaseActivity.Companion.PERMISSIONS_REQUEST_ENABLE_GPS
 
 fun View.hideView() {
     this.visibility = View.GONE
@@ -28,10 +28,14 @@ fun Activity.buildAlertMessageNoGps() {
         .setCancelable(false)
         .setPositiveButton("Allow") { _, _ ->
             val enableGpsIntent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
-            startActivityForResult(enableGpsIntent, MainActivity.PERMISSIONS_REQUEST_ENABLE_GPS)
+            startActivityForResult(
+                enableGpsIntent,
+                PERMISSIONS_REQUEST_ENABLE_GPS
+            )
         }
     val alert: AlertDialog = builder.create()
     alert.show()
+
 }
 
 

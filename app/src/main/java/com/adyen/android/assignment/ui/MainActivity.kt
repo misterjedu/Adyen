@@ -1,15 +1,8 @@
 package com.adyen.android.assignment.ui
 
-import android.Manifest
-import android.annotation.SuppressLint
-import android.content.Intent
-import android.location.Location
 import android.os.Bundle
-import android.os.Looper
 import android.view.View
 import android.widget.SearchView
-import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
@@ -20,25 +13,17 @@ import com.adyen.android.assignment.api.model.RecommendedItem
 import com.adyen.android.assignment.modelFactory.ViewModelFactory
 import com.adyen.android.assignment.repository.Repository
 import com.adyen.android.assignment.ui.venue_recycler_adapter.RecommendedItemListAdapter
+import com.adyen.android.assignment.util.hideView
+import com.adyen.android.assignment.util.isMapsEnabled
+import com.adyen.android.assignment.util.showView
+import com.adyen.android.assignment.util.toast
 import com.adyen.android.assignment.viewmodel.VenueViewModel
 import com.google.android.gms.location.*
-import com.vmadalin.easypermissions.EasyPermissions
-import com.vmadalin.easypermissions.dialogs.SettingsDialog
 import kotlinx.android.synthetic.main.activity_main.*
 
-class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
+class MainActivity : BaseActivity() {
     private lateinit var viewModel: VenueViewModel
 
-    private var longitude: Double = 0.0
-    private var latitude: Double = 0.0
-
-    companion object {
-        const val PERMISSION_LOCATION_REQUEST_CODE = 1
-        const val PERMISSIONS_REQUEST_ENABLE_GPS = 9003
-    }
-
-    private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
-    private lateinit var locationCallback: LocationCallback
     private var recommendedItemRecyclerAdapter = RecommendedItemListAdapter()
     private lateinit var searchView: SearchView
     private lateinit var venueRecycler: RecyclerView
@@ -55,8 +40,7 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
 
         viewModel = ViewModelProvider(this, viewModelFactory).get(VenueViewModel::class.java)
 
-        fusedLocationProviderClient =
-            LocationServices.getFusedLocationProviderClient(this)
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
 
         venueRecycler.adapter = recommendedItemRecyclerAdapter
 
@@ -67,7 +51,6 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
                 toast("Location not yet set")
             }
         }
-
         searchVenues()
     }
 
@@ -119,47 +102,6 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
         })
     }
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        EasyPermissions.onRequestPermissionsResult(requestCode, permissions, grantResults, this)
-    }
-
-
-    override fun onPermissionsDenied(requestCode: Int, perms: List<String>) {
-        if (EasyPermissions.somePermissionPermanentlyDenied(this, perms)) {
-            SettingsDialog.Builder(this).build().show()
-        } else {
-            requestLocationPermission()
-        }
-    }
-
-    override fun onPermissionsGranted(requestCode: Int, perms: List<String>) {
-        Toast.makeText(
-            this,
-            "Permission Granted!",
-            Toast.LENGTH_SHORT
-        ).show()
-
-        getLocation()
-    }
-
-
-    private fun hasLocationPermission() = EasyPermissions.hasPermissions(
-        this, Manifest.permission.ACCESS_FINE_LOCATION
-    )
-
-    private fun requestLocationPermission() {
-        EasyPermissions.requestPermissions(
-            this,
-            "This application cannot work without Location Permission.",
-            PERMISSION_LOCATION_REQUEST_CODE,
-            Manifest.permission.ACCESS_FINE_LOCATION
-        )
-    }
 
     private fun searchVenues() {
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
@@ -189,81 +131,19 @@ class MainActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
     override fun onResume() {
         super.onResume()
         if (isMapsEnabled()) {
-            getLocation()
+            getLocation(locationReceived)
         }
     }
 
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        when (requestCode) {
-            PERMISSIONS_REQUEST_ENABLE_GPS -> {
-                getLocation()
-            }
-        }
-    }
-
-
-    /**
-     * The co-ordinates of the user is gotten using the fused location client provider
-     * The last location is requested first, and if null, the requestLocationUpdate
-     *  is used.
-     */
-    @SuppressLint("MissingPermission")
-
-    fun getLocation() {
-        if (hasLocationPermission()) {
-            toast("Getting location...")
-
-            fusedLocationProviderClient.lastLocation.addOnSuccessListener { location: Location? ->
-                if (location == null) {
-                    getLocationUpdate()
-                } else {
-                    location?.let {
-                        longitude = it.longitude
-                        latitude = it.latitude
-                        callObserveVenueRecommendation(it.latitude, it.longitude)
-                    }
-                }
-            }
-        } else {
-            requestLocationPermission()
-        }
-    }
-
-    @SuppressLint("MissingPermission")
-    fun getLocationUpdate() {
-        val locationRequest = LocationRequest.create()
-
-        locationCallback = object : LocationCallback() {
-            override fun onLocationResult(locationResult: LocationResult) {
-
-                toast("Location received...")
-                longitude = locationResult.lastLocation.longitude
-                latitude = locationResult.lastLocation.latitude
-
-                toast("${latitude} ${longitude}")
+    var locationReceived: LocationUpdateCallBack = object : LocationUpdateCallBack {
+        override fun getLocationRequest() {
+            if (latitude != 0.0 && longitude != 0.0) {
                 callObserveVenueRecommendation(latitude, longitude)
+            } else {
+                toast("Location not yet set")
             }
         }
 
-        fusedLocationProviderClient
-            .requestLocationUpdates(
-                locationRequest,
-                locationCallback,
-                Looper.getMainLooper()
-            )
-
     }
 
-    /**
-     *The location update listener is removed on pause of the activity to prevent constant listening
-     * when the activity is no longer in use.
-     */
-    override fun onPause() {
-        super.onPause()
-        if (::fusedLocationProviderClient.isInitialized && ::locationCallback.isInitialized) {
-            fusedLocationProviderClient.removeLocationUpdates(locationCallback)
-        }
-    }
 }
