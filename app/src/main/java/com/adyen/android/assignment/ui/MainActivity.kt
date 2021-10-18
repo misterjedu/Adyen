@@ -21,7 +21,7 @@ import com.adyen.android.assignment.viewmodel.VenueViewModel
 import com.google.android.gms.location.*
 import kotlinx.android.synthetic.main.activity_main.*
 
-class MainActivity : BaseActivity() {
+class MainActivity : LocationRequestBaseActivity() {
     private lateinit var viewModel: VenueViewModel
 
     private var recommendedItemRecyclerAdapter = RecommendedItemListAdapter()
@@ -45,12 +45,9 @@ class MainActivity : BaseActivity() {
         venueRecycler.adapter = recommendedItemRecyclerAdapter
 
         activity_main_reload_button.setOnClickListener {
-            if (latitude != 0.0 && longitude != 0.0) {
-                callObserveVenueRecommendation(latitude, longitude)
-            } else {
-                toast("Location not yet set")
-            }
+            callRetrievedLocation()
         }
+
         searchVenues()
     }
 
@@ -102,7 +99,6 @@ class MainActivity : BaseActivity() {
         })
     }
 
-
     private fun searchVenues() {
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(p0: String?): Boolean {
@@ -120,7 +116,6 @@ class MainActivity : BaseActivity() {
      * Switch  to loading, error ir success screen depending on the state of the
      * network response
      */
-
     private fun switchVisibilityOn(view: View) {
         activity_main_loading_layout.hideView()
         activity_main_venue_recycler.hideView()
@@ -137,13 +132,15 @@ class MainActivity : BaseActivity() {
 
     var locationReceived: LocationUpdateCallBack = object : LocationUpdateCallBack {
         override fun getLocationRequest() {
-            if (latitude != 0.0 && longitude != 0.0) {
-                callObserveVenueRecommendation(latitude, longitude)
-            } else {
-                toast("Location not yet set")
-            }
+            callRetrievedLocation()
         }
-
     }
 
+    private fun callRetrievedLocation() {
+        if (latitude != 0.0 && longitude != 0.0) {
+            callObserveVenueRecommendation(latitude, longitude)
+        } else {
+            toast("Location not yet set")
+        }
+    }
 }

@@ -15,7 +15,8 @@ import com.google.android.gms.location.LocationResult
 import com.vmadalin.easypermissions.EasyPermissions
 import com.vmadalin.easypermissions.dialogs.SettingsDialog
 
-abstract class BaseActivity : AppCompatActivity(), EasyPermissions.PermissionCallbacks {
+abstract class LocationRequestBaseActivity : AppCompatActivity(),
+    EasyPermissions.PermissionCallbacks {
 
     var mCallBack: LocationUpdateCallBack? = null
     lateinit var fusedLocationProviderClient: FusedLocationProviderClient

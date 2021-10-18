@@ -8,7 +8,7 @@ import android.location.LocationManager
 import android.provider.Settings
 import android.view.View
 import android.widget.Toast
-import com.adyen.android.assignment.ui.BaseActivity.Companion.PERMISSIONS_REQUEST_ENABLE_GPS
+import com.adyen.android.assignment.ui.LocationRequestBaseActivity.Companion.PERMISSIONS_REQUEST_ENABLE_GPS
 
 fun View.hideView() {
     this.visibility = View.GONE
